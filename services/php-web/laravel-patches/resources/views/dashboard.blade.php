@@ -228,17 +228,38 @@ document.addEventListener('DOMContentLoaded', async function () {
     
     // Инициализация карты с улучшенными настройками
     const map = L.map('map', { 
-      attributionControl: false,
+      attributionControl: true,
       zoomControl: true,
-      scrollWheelZoom: true
+      scrollWheelZoom: true,
+      doubleClickZoom: true,
+      boxZoom: true
     }).setView([lat0||0, lon0||0], lat0 ? 3 : 2);
     
-    // Темная карта для лучшей видимости траектории
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
+    // Стандартная карта OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       noWrap: true,
-      maxZoom: 18
+      maxZoom: 19,
+      minZoom: 2
     }).addTo(map);
+    
+    // Сохраняем начальную позицию и масштаб
+    let userHasInteracted = false;
+    let savedView = { center: [lat0||0, lon0||0], zoom: lat0 ? 3 : 2 };
+    
+    // Отслеживаем взаимодействие пользователя с картой
+    map.on('dragstart', () => { userHasInteracted = true; });
+    map.on('zoomstart', () => { userHasInteracted = true; });
+    
+    // Сохраняем текущий вид карты при изменении
+    map.on('moveend', () => {
+      if (userHasInteracted) {
+        savedView = {
+          center: map.getCenter(),
+          zoom: map.getZoom()
+        };
+      }
+    });
     
     // Создаем кастомную иконку для МКС
     const issIcon = L.divIcon({
@@ -266,15 +287,8 @@ document.addEventListener('DOMContentLoaded', async function () {
       keyboard: false
     }).addTo(map);
     
-    // Привязываем маркер к карте при изменении масштаба
-    map.on('zoomend', function() {
-      if (marker && marker.getLatLng()) {
-        const pos = marker.getLatLng();
-        if (pos.lat && pos.lng) {
-          marker.setLatLng(pos); // Обновляем позицию
-        }
-      }
-    });
+    // Маркер всегда привязан к реальным координатам, не зависит от масштаба
+    // Не нужно ничего делать при изменении масштаба - Leaflet сам обрабатывает это
     
     // Попап с информацией
     marker.bindPopup(`
@@ -306,7 +320,9 @@ document.addEventListener('DOMContentLoaded', async function () {
     
     document.getElementById('centerMap')?.addEventListener('click', () => {
       if (marker.getLatLng().lat && marker.getLatLng().lng) {
-        map.setView(marker.getLatLng(), 4, { animate: true, duration: 1 });
+        const currentZoom = map.getZoom();
+        map.setView(marker.getLatLng(), currentZoom, { animate: true, duration: 1 });
+        userHasInteracted = false; // Разрешаем авто-подстройку после ручного центрирования
       }
     });
 
@@ -415,16 +431,24 @@ document.addEventListener('DOMContentLoaded', async function () {
             trail.addTo(map);
           }
           
-          // Обновляем границы карты чтобы показать всю траекторию
-          if (pts.length > 1) {
+          // НЕ меняем масштаб/позицию карты если пользователь уже взаимодействовал с ней
+          // Только при первой загрузке подстраиваем карту
+          if (!userHasInteracted && pts.length > 1) {
             const bounds = L.latLngBounds(pts);
             map.fitBounds(bounds, { padding: [20, 20], maxZoom: 5 });
+            userHasInteracted = false; // Сбрасываем флаг после первой настройки
           }
           
-          // Обновляем маркер на последней позиции
+          // Обновляем маркер на последней позиции (только координаты, не трогаем карту)
           const lastPos = pts[pts.length - 1];
           if (lastPos && lastPos[0] && lastPos[1]) {
-            marker.setLatLng(lastPos);
+            // Плавно обновляем позицию маркера без изменения вида карты
+            const currentMarkerPos = marker.getLatLng();
+            if (currentMarkerPos && 
+                (Math.abs(currentMarkerPos.lat - lastPos[0]) > 0.01 || 
+                 Math.abs(currentMarkerPos.lng - lastPos[1]) > 0.01)) {
+              marker.setLatLng(lastPos);
+            }
             
             // Обновляем попап
             const lastPoint = js.points[js.points.length - 1];
