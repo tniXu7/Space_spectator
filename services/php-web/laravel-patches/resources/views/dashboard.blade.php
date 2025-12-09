@@ -232,20 +232,30 @@ document.addEventListener('DOMContentLoaded', async function () {
       zoomControl: true,
       scrollWheelZoom: true,
       doubleClickZoom: true,
-      boxZoom: true
+      boxZoom: true,
+      worldCopyJump: false
     }).setView([lat0||0, lon0||0], lat0 ? 3 : 2);
     
-    // Стандартная карта OpenStreetMap
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    // Используем Esri World Imagery - более стабильная карта
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: '&copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
       noWrap: true,
       maxZoom: 19,
       minZoom: 2
     }).addTo(map);
     
+    // Альтернативный слой - можно переключиться на стандартную карту
+    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      noWrap: true,
+      maxZoom: 19,
+      minZoom: 2
+    });
+    
     // Сохраняем начальную позицию и масштаб
     let userHasInteracted = false;
     let savedView = { center: [lat0||0, lon0||0], zoom: lat0 ? 3 : 2 };
+    let currentIssPosition = [lat0||0, lon0||0];
     
     // Отслеживаем взаимодействие пользователя с картой
     map.on('dragstart', () => { userHasInteracted = true; });
@@ -261,34 +271,66 @@ document.addEventListener('DOMContentLoaded', async function () {
       }
     });
     
-    // Создаем кастомную иконку для МКС
-    const issIcon = L.divIcon({
-      className: 'iss-marker',
-      html: '<div style="background: #ff6b6b; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(255,107,107,0.8);"></div>',
-      iconSize: [20, 20],
-      iconAnchor: [10, 10]
+    // Создаем кастомную иконку для МКС с использованием SVG для стабильности
+    const issIcon = L.icon({
+      iconUrl: 'data:image/svg+xml;base64,' + btoa(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+          <circle cx="16" cy="16" r="12" fill="#ff6b6b" stroke="white" stroke-width="3"/>
+          <circle cx="16" cy="16" r="6" fill="white"/>
+          <circle cx="16" cy="16" r="2" fill="#ff6b6b"/>
+        </svg>
+      `),
+      iconSize: [32, 32],
+      iconAnchor: [16, 16],
+      popupAnchor: [0, -16]
     });
     
     // Траектория с улучшенным стилем - делаем очень заметной
     const trail = L.polyline([], {
-      weight: 5,
+      weight: 4,
       color: '#ff6b6b',
-      opacity: 1.0,
+      opacity: 0.9,
       smoothFactor: 1,
       lineCap: 'round',
       lineJoin: 'round'
     }).addTo(map);
     
-    // Маркер МКС - фиксированный, не перетаскиваемый
+    // Маркер МКС - используем стандартный маркер Leaflet для стабильности
     const marker = L.marker([lat0||0, lon0||0], { 
       icon: issIcon,
       title: 'Международная космическая станция',
       draggable: false,
-      keyboard: false
+      keyboard: false,
+      zIndexOffset: 1000 // Всегда поверх других элементов
     }).addTo(map);
     
-    // Маркер всегда привязан к реальным координатам, не зависит от масштаба
-    // Не нужно ничего делать при изменении масштаба - Leaflet сам обрабатывает это
+    // Сохраняем реальные координаты МКС
+    function updateMarkerPosition(lat, lng) {
+      if (lat && lng && !isNaN(lat) && !isNaN(lng)) {
+        currentIssPosition = [lat, lng];
+        // Обновляем маркер БЕЗ изменения вида карты
+        marker.setLatLng([lat, lng]);
+      }
+    }
+    
+    // Предотвращаем изменение позиции маркера при зуме
+    let isUpdating = false;
+    map.on('zoom', function() {
+      if (!isUpdating && currentIssPosition[0] && currentIssPosition[1]) {
+        // Сохраняем текущую позицию маркера
+        const markerPos = marker.getLatLng();
+        if (markerPos) {
+          currentIssPosition = [markerPos.lat, markerPos.lng];
+        }
+      }
+    });
+    
+    map.on('zoomend', function() {
+      if (!isUpdating && currentIssPosition[0] && currentIssPosition[1]) {
+        // Восстанавливаем позицию маркера после зума
+        marker.setLatLng(currentIssPosition);
+      }
+    });
     
     // Попап с информацией
     marker.bindPopup(`
@@ -319,10 +361,41 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
     
     document.getElementById('centerMap')?.addEventListener('click', () => {
-      if (marker.getLatLng().lat && marker.getLatLng().lng) {
+      if (currentIssPosition[0] && currentIssPosition[1]) {
         const currentZoom = map.getZoom();
-        map.setView(marker.getLatLng(), currentZoom, { animate: true, duration: 1 });
+        map.setView(currentIssPosition, currentZoom, { animate: true, duration: 1 });
         userHasInteracted = false; // Разрешаем авто-подстройку после ручного центрирования
+      }
+    });
+    
+    // Добавляем кнопку переключения карты
+    const mapToggleBtn = document.createElement('button');
+    mapToggleBtn.className = 'btn btn-sm btn-outline-secondary';
+    mapToggleBtn.innerHTML = '<i class="bi bi-map"></i>';
+    mapToggleBtn.title = 'Переключить тип карты';
+    mapToggleBtn.style.position = 'absolute';
+    mapToggleBtn.style.top = '10px';
+    mapToggleBtn.style.right = '10px';
+    mapToggleBtn.style.zIndex = '1000';
+    document.getElementById('map').appendChild(mapToggleBtn);
+    
+    let currentLayer = 'satellite';
+    mapToggleBtn.addEventListener('click', () => {
+      if (currentLayer === 'satellite') {
+        map.removeLayer(map._layers[Object.keys(map._layers)[0]]);
+        osmLayer.addTo(map);
+        currentLayer = 'osm';
+        mapToggleBtn.innerHTML = '<i class="bi bi-satellite"></i>';
+      } else {
+        map.removeLayer(osmLayer);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution: '&copy; Esri',
+          noWrap: true,
+          maxZoom: 19,
+          minZoom: 2
+        }).addTo(map);
+        currentLayer = 'satellite';
+        mapToggleBtn.innerHTML = '<i class="bi bi-map"></i>';
       }
     });
 
@@ -442,13 +515,10 @@ document.addEventListener('DOMContentLoaded', async function () {
           // Обновляем маркер на последней позиции (только координаты, не трогаем карту)
           const lastPos = pts[pts.length - 1];
           if (lastPos && lastPos[0] && lastPos[1]) {
-            // Плавно обновляем позицию маркера без изменения вида карты
-            const currentMarkerPos = marker.getLatLng();
-            if (currentMarkerPos && 
-                (Math.abs(currentMarkerPos.lat - lastPos[0]) > 0.01 || 
-                 Math.abs(currentMarkerPos.lng - lastPos[1]) > 0.01)) {
-              marker.setLatLng(lastPos);
-            }
+            isUpdating = true;
+            // Обновляем позицию маркера БЕЗ изменения вида карты
+            updateMarkerPosition(lastPos[0], lastPos[1]);
+            isUpdating = false;
             
             // Обновляем попап
             const lastPoint = js.points[js.points.length - 1];
