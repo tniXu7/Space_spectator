@@ -1,0 +1,27 @@
+# Исключаем все .md файлы кроме README.md
+*.md
+!README.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.env
+tmp.env.add
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+
