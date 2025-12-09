@@ -5,75 +5,66 @@
   {{-- верхние карточки с метриками --}}
   <div class="row g-3 mb-4">
     <div class="col-6 col-md-3">
-      <div class="card shadow-sm border-0 h-100">
+      <div class="card shadow-sm border-0 h-100 card-metric-primary">
         <div class="card-body text-center">
           <div class="mb-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="text-primary" viewBox="0 0 16 16">
-              <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
-            </svg>
+            <i class="bi bi-speedometer2" style="font-size: 2rem;"></i>
           </div>
-          <div class="small text-muted mb-1">Скорость МКС</div>
-          <div class="fs-3 fw-bold text-primary">
+          <div class="small mb-1">Скорость МКС</div>
+          <div class="fs-3 fw-bold">
             {{ isset(($iss['payload'] ?? [])['velocity']) ? number_format($iss['payload']['velocity'],0,'',' ') : '—' }}
-            <small class="fs-6 text-muted">км/ч</small>
+            <small class="fs-6">км/ч</small>
           </div>
-          <div class="small text-muted mt-1" data-bs-toggle="tooltip" title="Текущая скорость Международной космической станции">
+          <div class="small mt-1" data-bs-toggle="tooltip" title="Текущая скорость Международной космической станции">
             <i class="bi bi-info-circle"></i> Текущая скорость
           </div>
         </div>
       </div>
     </div>
     <div class="col-6 col-md-3">
-      <div class="card shadow-sm border-0 h-100">
+      <div class="card shadow-sm border-0 h-100 card-metric-success">
         <div class="card-body text-center">
           <div class="mb-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="text-success" viewBox="0 0 16 16">
-              <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
-            </svg>
+            <i class="bi bi-arrow-up-circle" style="font-size: 2rem;"></i>
           </div>
-          <div class="small text-muted mb-1">Высота МКС</div>
-          <div class="fs-3 fw-bold text-success">
+          <div class="small mb-1">Высота МКС</div>
+          <div class="fs-3 fw-bold">
             {{ isset(($iss['payload'] ?? [])['altitude']) ? number_format($iss['payload']['altitude'],0,'',' ') : '—' }}
-            <small class="fs-6 text-muted">км</small>
+            <small class="fs-6">км</small>
           </div>
-          <div class="small text-muted mt-1" data-bs-toggle="tooltip" title="Высота орбиты над поверхностью Земли">
+          <div class="small mt-1" data-bs-toggle="tooltip" title="Высота орбиты над поверхностью Земли">
             <i class="bi bi-info-circle"></i> Высота орбиты
           </div>
         </div>
       </div>
     </div>
     <div class="col-6 col-md-3">
-      <div class="card shadow-sm border-0 h-100">
+      <div class="card shadow-sm border-0 h-100 card-metric-info">
         <div class="card-body text-center">
           <div class="mb-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="text-info" viewBox="0 0 16 16">
-              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
-              <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
-            </svg>
+            <i class="bi bi-image" style="font-size: 2rem;"></i>
           </div>
-          <div class="small text-muted mb-1">JWST изображений</div>
-          <div class="fs-3 fw-bold text-info">
+          <div class="small mb-1">JWST изображений</div>
+          <div class="fs-3 fw-bold">
             <span id="jwstCount">—</span>
           </div>
-          <div class="small text-muted mt-1" data-bs-toggle="tooltip" title="Количество загруженных изображений с телескопа JWST">
+          <div class="small mt-1" data-bs-toggle="tooltip" title="Количество загруженных изображений с телескопа JWST">
             <i class="bi bi-info-circle"></i> В галерее
           </div>
         </div>
       </div>
     </div>
     <div class="col-6 col-md-3">
-      <div class="card shadow-sm border-0 h-100">
+      <div class="card shadow-sm border-0 h-100 card-metric-warning">
         <div class="card-body text-center">
           <div class="mb-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="text-warning" viewBox="0 0 16 16">
-              <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
-            </svg>
+            <i class="bi bi-stars" style="font-size: 2rem;"></i>
           </div>
-          <div class="small text-muted mb-1">Астрономических событий</div>
-          <div class="fs-3 fw-bold text-warning">
+          <div class="small mb-1">Астрономических событий</div>
+          <div class="fs-3 fw-bold">
             <span id="astroCount">—</span>
           </div>
-          <div class="small text-muted mt-1" data-bs-toggle="tooltip" title="Количество найденных астрономических событий">
+          <div class="small mt-1" data-bs-toggle="tooltip" title="Количество найденных астрономических событий">
             <i class="bi bi-info-circle"></i> Найдено
           </div>
         </div>
@@ -109,24 +100,47 @@
     <div class="col-lg-5">
       <div class="card shadow-sm h-100">
         <div class="card-body">
-          <h5 class="card-title d-flex align-items-center">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="me-2 text-primary" viewBox="0 0 16 16">
-              <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
-            </svg>
-            МКС — положение и движение
-          </h5>
-          <p class="small text-muted mb-2" data-bs-toggle="tooltip" title="Карта обновляется каждые 15 секунд">
-            <i class="bi bi-info-circle"></i> Карта показывает текущее положение станции
-          </p>
-          <div id="map" class="rounded mb-2 border" style="height:300px"></div>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="card-title m-0 d-flex align-items-center">
+              <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
+              МКС — траектория движения
+            </h5>
+            <div class="d-flex gap-2">
+              <button id="toggleTrail" class="btn btn-sm btn-outline-primary" title="Показать/скрыть траекторию">
+                <i class="bi bi-diagram-3"></i>
+              </button>
+              <button id="centerMap" class="btn btn-sm btn-outline-secondary" title="Центрировать карту">
+                <i class="bi bi-crosshair"></i>
+              </button>
+            </div>
+          </div>
+          <div class="mb-2">
+            <div class="d-flex justify-content-between align-items-center small text-muted">
+              <span data-bs-toggle="tooltip" title="Карта обновляется каждые 15 секунд">
+                <i class="bi bi-info-circle"></i> Траектория за последние 24 часа
+              </span>
+              <span id="issStatus" class="badge bg-success pulse">
+                <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> Активно
+              </span>
+            </div>
+          </div>
+          <div id="map" class="rounded mb-3 border shadow-sm"></div>
           <div class="row g-2">
             <div class="col-6">
-              <div class="small text-muted text-center mb-1">Скорость</div>
-              <canvas id="issSpeedChart" height="110"></canvas>
+              <div class="small text-muted text-center mb-1">
+                <i class="bi bi-speedometer2 me-1"></i>Скорость
+              </div>
+              <div class="chart-container">
+                <canvas id="issSpeedChart"></canvas>
+              </div>
             </div>
             <div class="col-6">
-              <div class="small text-muted text-center mb-1">Высота</div>
-              <canvas id="issAltChart" height="110"></canvas>
+              <div class="small text-muted text-center mb-1">
+                <i class="bi bi-arrow-up-circle me-1"></i>Высота
+              </div>
+              <div class="chart-container">
+                <canvas id="issAltChart"></canvas>
+              </div>
             </div>
           </div>
         </div>
@@ -207,42 +221,218 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', async function () {
-  // ====== карта и графики МКС (как раньше) ======
+  // ====== УЛУЧШЕННАЯ КАРТА И ГРАФИКИ МКС ======
   if (typeof L !== 'undefined' && typeof Chart !== 'undefined') {
     const last = @json(($iss['payload'] ?? []));
     let lat0 = Number(last.latitude || 0), lon0 = Number(last.longitude || 0);
-    const map = L.map('map', { attributionControl:false }).setView([lat0||0, lon0||0], lat0?3:2);
-    L.tileLayer('https://{s}.tile.openstreetmap.de/{z}/{x}/{y}.png', { noWrap:true }).addTo(map);
-    const trail  = L.polyline([], {weight:3}).addTo(map);
-    const marker = L.marker([lat0||0, lon0||0]).addTo(map).bindPopup('МКС');
+    
+    // Инициализация карты с улучшенными настройками
+    const map = L.map('map', { 
+      attributionControl: false,
+      zoomControl: true,
+      scrollWheelZoom: true
+    }).setView([lat0||0, lon0||0], lat0 ? 3 : 2);
+    
+    // Темная карта для лучшей видимости траектории
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      noWrap: true,
+      maxZoom: 18
+    }).addTo(map);
+    
+    // Создаем кастомную иконку для МКС
+    const issIcon = L.divIcon({
+      className: 'iss-marker',
+      html: '<div style="background: #ff6b6b; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(255,107,107,0.8);"></div>',
+      iconSize: [20, 20],
+      iconAnchor: [10, 10]
+    });
+    
+    // Траектория с улучшенным стилем
+    const trail = L.polyline([], {
+      weight: 4,
+      color: '#ff6b6b',
+      opacity: 0.8,
+      smoothFactor: 1
+    }).addTo(map);
+    
+    // Маркер МКС
+    const marker = L.marker([lat0||0, lon0||0], { 
+      icon: issIcon,
+      title: 'Международная космическая станция'
+    }).addTo(map);
+    
+    // Попап с информацией
+    marker.bindPopup(`
+      <div class="text-center">
+        <h6 class="mb-2">🚀 МКС</h6>
+        <div class="small">
+          <div><strong>Широта:</strong> ${lat0.toFixed(4)}°</div>
+          <div><strong>Долгота:</strong> ${lon0.toFixed(4)}°</div>
+          <div><strong>Скорость:</strong> ${(last.velocity || 0).toFixed(0)} км/ч</div>
+          <div><strong>Высота:</strong> ${(last.altitude || 0).toFixed(0)} км</div>
+        </div>
+      </div>
+    `);
+    
+    let trailVisible = true;
+    let animationIndex = 0;
+    
+    // Кнопки управления
+    document.getElementById('toggleTrail')?.addEventListener('click', () => {
+      trailVisible = !trailVisible;
+      if (trailVisible) {
+        map.addLayer(trail);
+        document.getElementById('toggleTrail').innerHTML = '<i class="bi bi-diagram-3"></i>';
+      } else {
+        map.removeLayer(trail);
+        document.getElementById('toggleTrail').innerHTML = '<i class="bi bi-diagram-3-fill"></i>';
+      }
+    });
+    
+    document.getElementById('centerMap')?.addEventListener('click', () => {
+      if (marker.getLatLng().lat && marker.getLatLng().lng) {
+        map.setView(marker.getLatLng(), 4, { animate: true, duration: 1 });
+      }
+    });
 
+    // Улучшенные графики
     const speedChart = new Chart(document.getElementById('issSpeedChart'), {
-      type: 'line', data: { labels: [], datasets: [{ label: 'Скорость', data: [] }] },
-      options: { responsive: true, scales: { x: { display: false } } }
+      type: 'line',
+      data: { 
+        labels: [], 
+        datasets: [{ 
+          label: 'Скорость (км/ч)', 
+          data: [],
+          borderColor: '#667eea',
+          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          tension: 0.4,
+          fill: true,
+          pointRadius: 2,
+          pointHoverRadius: 4
+        }] 
+      },
+      options: { 
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { 
+          x: { display: false },
+          y: { 
+            display: true,
+            ticks: { font: { size: 10 } }
+          }
+        },
+        animation: { duration: 750 }
+      }
     });
+    
     const altChart = new Chart(document.getElementById('issAltChart'), {
-      type: 'line', data: { labels: [], datasets: [{ label: 'Высота', data: [] }] },
-      options: { responsive: true, scales: { x: { display: false } } }
+      type: 'line',
+      data: { 
+        labels: [], 
+        datasets: [{ 
+          label: 'Высота (км)', 
+          data: [],
+          borderColor: '#f5576c',
+          backgroundColor: 'rgba(245, 87, 108, 0.1)',
+          tension: 0.4,
+          fill: true,
+          pointRadius: 2,
+          pointHoverRadius: 4
+        }] 
+      },
+      options: { 
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { 
+          x: { display: false },
+          y: { 
+            display: true,
+            ticks: { font: { size: 10 } }
+          }
+        },
+        animation: { duration: 750 }
+      }
     });
+
+    // Функция анимации движения маркера
+    function animateMarker(pts) {
+      if (!pts || pts.length === 0) return;
+      
+      const currentPos = marker.getLatLng();
+      const targetPos = L.latLng(pts[pts.length - 1]);
+      
+      if (currentPos.lat !== targetPos.lat || currentPos.lng !== targetPos.lng) {
+        // Плавное перемещение маркера
+        const steps = 20;
+        let step = 0;
+        const latStep = (targetPos.lat - currentPos.lat) / steps;
+        const lngStep = (targetPos.lng - currentPos.lng) / steps;
+        
+        const animate = setInterval(() => {
+          step++;
+          const newLat = currentPos.lat + (latStep * step);
+          const newLng = currentPos.lng + (lngStep * step);
+          marker.setLatLng([newLat, newLng]);
+          
+          if (step >= steps) {
+            clearInterval(animate);
+            marker.setLatLng(targetPos);
+          }
+        }, 30);
+      }
+    }
 
     async function loadTrend() {
       try {
         const r = await fetch('/api/iss/trend?limit=240');
         const js = await r.json();
         const pts = Array.isArray(js.points) ? js.points.map(p => [p.lat, p.lon]) : [];
+        
         if (pts.length) {
+          // Обновляем траекторию
           trail.setLatLngs(pts);
-          marker.setLatLng(pts[pts.length-1]);
+          
+          // Анимируем маркер
+          animateMarker(pts);
+          
+          // Обновляем попап
+          const lastPoint = js.points[js.points.length - 1];
+          marker.setPopupContent(`
+            <div class="text-center">
+              <h6 class="mb-2">🚀 МКС</h6>
+              <div class="small">
+                <div><strong>Широта:</strong> ${lastPoint.lat.toFixed(4)}°</div>
+                <div><strong>Долгота:</strong> ${lastPoint.lon.toFixed(4)}°</div>
+                <div><strong>Скорость:</strong> ${lastPoint.velocity.toFixed(0)} км/ч</div>
+                <div><strong>Высота:</strong> ${lastPoint.altitude.toFixed(0)} км</div>
+                <div class="mt-2 text-muted"><small>${new Date(lastPoint.at).toLocaleString('ru-RU')}</small></div>
+              </div>
+            </div>
+          `);
+          
+          // Обновляем графики
+          const t = js.points.map(p => new Date(p.at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }));
+          speedChart.data.labels = t;
+          speedChart.data.datasets[0].data = js.points.map(p => p.velocity);
+          speedChart.update('none'); // Без анимации для плавности
+          
+          altChart.data.labels = t;
+          altChart.data.datasets[0].data = js.points.map(p => p.altitude);
+          altChart.update('none');
+          
+          // Обновляем статус
+          document.getElementById('issStatus').innerHTML = '<i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> Активно';
         }
-        const t = (js.points||[]).map(p => new Date(p.at).toLocaleTimeString());
-        speedChart.data.labels = t;
-        speedChart.data.datasets[0].data = (js.points||[]).map(p => p.velocity);
-        speedChart.update();
-        altChart.data.labels = t;
-        altChart.data.datasets[0].data = (js.points||[]).map(p => p.altitude);
-        altChart.update();
-      } catch(e) {}
+      } catch(e) {
+        console.error('Ошибка загрузки данных МКС:', e);
+        document.getElementById('issStatus').innerHTML = '<i class="bi bi-circle-fill text-warning" style="font-size: 0.5rem;"></i> Ошибка';
+      }
     }
+    
+    // Загружаем данные сразу и затем каждые 15 секунд
     loadTrend();
     setInterval(loadTrend, 15000);
   }

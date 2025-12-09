@@ -7,7 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
   <style>
-    #map{height:340px}
+    #map{height:400px; border-radius: 8px; overflow: hidden;}
     
     /* Анимации */
     @keyframes fadeIn {
@@ -20,6 +20,16 @@
       to { transform: translateX(0); opacity: 1; }
     }
     
+    @keyframes orbitPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    
+    @keyframes trailGlow {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 1; }
+    }
+    
     .fade-in {
       animation: fadeIn 0.5s ease-in;
     }
@@ -29,12 +39,42 @@
     }
     
     .card {
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: transform 0.3s, box-shadow 0.3s;
+      border: none;
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
     }
     
     .card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+    }
+    
+    /* Градиенты для карточек метрик */
+    .card-metric-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    
+    .card-metric-success {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+    }
+    
+    .card-metric-info {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+      color: white;
+    }
+    
+    .card-metric-warning {
+      background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+      color: white;
+    }
+    
+    .card-metric-primary .text-muted,
+    .card-metric-success .text-muted,
+    .card-metric-info .text-muted,
+    .card-metric-warning .text-muted {
+      color: rgba(255,255,255,0.8) !important;
     }
     
     .table tbody tr {
@@ -83,6 +123,27 @@
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.5; }
+    }
+    
+    /* Стили для траектории МКС */
+    .iss-trail {
+      stroke: #ff6b6b;
+      stroke-width: 4;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      filter: drop-shadow(0 0 4px rgba(255, 107, 107, 0.6));
+      animation: trailGlow 3s ease-in-out infinite;
+    }
+    
+    .iss-marker {
+      animation: orbitPulse 2s ease-in-out infinite;
+    }
+    
+    /* Улучшенные графики */
+    .chart-container {
+      position: relative;
+      height: 110px;
     }
   </style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
