@@ -248,19 +248,33 @@ document.addEventListener('DOMContentLoaded', async function () {
       iconAnchor: [10, 10]
     });
     
-    // Траектория с улучшенным стилем
+    // Траектория с улучшенным стилем - делаем очень заметной
     const trail = L.polyline([], {
-      weight: 4,
+      weight: 5,
       color: '#ff6b6b',
-      opacity: 0.8,
-      smoothFactor: 1
+      opacity: 1.0,
+      smoothFactor: 1,
+      lineCap: 'round',
+      lineJoin: 'round'
     }).addTo(map);
     
-    // Маркер МКС
+    // Маркер МКС - фиксированный, не перетаскиваемый
     const marker = L.marker([lat0||0, lon0||0], { 
       icon: issIcon,
-      title: 'Международная космическая станция'
+      title: 'Международная космическая станция',
+      draggable: false,
+      keyboard: false
     }).addTo(map);
+    
+    // Привязываем маркер к карте при изменении масштаба
+    map.on('zoomend', function() {
+      if (marker && marker.getLatLng()) {
+        const pos = marker.getLatLng();
+        if (pos.lat && pos.lng) {
+          marker.setLatLng(pos); // Обновляем позицию
+        }
+      }
+    });
     
     // Попап с информацией
     marker.bindPopup(`
@@ -388,47 +402,81 @@ document.addEventListener('DOMContentLoaded', async function () {
     async function loadTrend() {
       try {
         const r = await fetch('/api/iss/trend?limit=240');
+        if (!r.ok) {
+          throw new Error(`HTTP ${r.status}`);
+        }
         const js = await r.json();
         const pts = Array.isArray(js.points) ? js.points.map(p => [p.lat, p.lon]) : [];
         
-        if (pts.length) {
-          // Обновляем траекторию
+        if (pts.length > 0) {
+          // Обновляем траекторию - обязательно показываем
           trail.setLatLngs(pts);
+          if (!map.hasLayer(trail)) {
+            trail.addTo(map);
+          }
           
-          // Анимируем маркер
-          animateMarker(pts);
+          // Обновляем границы карты чтобы показать всю траекторию
+          if (pts.length > 1) {
+            const bounds = L.latLngBounds(pts);
+            map.fitBounds(bounds, { padding: [20, 20], maxZoom: 5 });
+          }
           
-          // Обновляем попап
-          const lastPoint = js.points[js.points.length - 1];
-          marker.setPopupContent(`
-            <div class="text-center">
-              <h6 class="mb-2">🚀 МКС</h6>
-              <div class="small">
-                <div><strong>Широта:</strong> ${lastPoint.lat.toFixed(4)}°</div>
-                <div><strong>Долгота:</strong> ${lastPoint.lon.toFixed(4)}°</div>
-                <div><strong>Скорость:</strong> ${lastPoint.velocity.toFixed(0)} км/ч</div>
-                <div><strong>Высота:</strong> ${lastPoint.altitude.toFixed(0)} км</div>
-                <div class="mt-2 text-muted"><small>${new Date(lastPoint.at).toLocaleString('ru-RU')}</small></div>
-              </div>
-            </div>
-          `);
+          // Обновляем маркер на последней позиции
+          const lastPos = pts[pts.length - 1];
+          if (lastPos && lastPos[0] && lastPos[1]) {
+            marker.setLatLng(lastPos);
+            
+            // Обновляем попап
+            const lastPoint = js.points[js.points.length - 1];
+            if (lastPoint) {
+              marker.setPopupContent(`
+                <div class="text-center">
+                  <h6 class="mb-2">🚀 МКС</h6>
+                  <div class="small">
+                    <div><strong>Широта:</strong> ${lastPoint.lat.toFixed(4)}°</div>
+                    <div><strong>Долгота:</strong> ${lastPoint.lon.toFixed(4)}°</div>
+                    <div><strong>Скорость:</strong> ${(lastPoint.velocity || 0).toFixed(0)} км/ч</div>
+                    <div><strong>Высота:</strong> ${(lastPoint.altitude || 0).toFixed(0)} км</div>
+                    <div class="mt-2 text-muted"><small>${new Date(lastPoint.at).toLocaleString('ru-RU')}</small></div>
+                  </div>
+                </div>
+              `);
+            }
+          }
           
           // Обновляем графики
-          const t = js.points.map(p => new Date(p.at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }));
-          speedChart.data.labels = t;
-          speedChart.data.datasets[0].data = js.points.map(p => p.velocity);
-          speedChart.update('none'); // Без анимации для плавности
-          
-          altChart.data.labels = t;
-          altChart.data.datasets[0].data = js.points.map(p => p.altitude);
-          altChart.update('none');
+          if (js.points && js.points.length > 0) {
+            const t = js.points.map(p => new Date(p.at).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }));
+            speedChart.data.labels = t;
+            speedChart.data.datasets[0].data = js.points.map(p => p.velocity || 0);
+            speedChart.update('none');
+            
+            altChart.data.labels = t;
+            altChart.data.datasets[0].data = js.points.map(p => p.altitude || 0);
+            altChart.update('none');
+          }
           
           // Обновляем статус
-          document.getElementById('issStatus').innerHTML = '<i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> Активно';
+          const statusEl = document.getElementById('issStatus');
+          if (statusEl) {
+            statusEl.innerHTML = '<i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> Активно';
+            statusEl.className = 'badge bg-success pulse';
+          }
+        } else {
+          console.warn('Нет точек траектории');
+          const statusEl = document.getElementById('issStatus');
+          if (statusEl) {
+            statusEl.innerHTML = '<i class="bi bi-circle-fill text-warning" style="font-size: 0.5rem;"></i> Нет данных';
+            statusEl.className = 'badge bg-warning';
+          }
         }
       } catch(e) {
         console.error('Ошибка загрузки данных МКС:', e);
-        document.getElementById('issStatus').innerHTML = '<i class="bi bi-circle-fill text-warning" style="font-size: 0.5rem;"></i> Ошибка';
+        const statusEl = document.getElementById('issStatus');
+        if (statusEl) {
+          statusEl.innerHTML = '<i class="bi bi-circle-fill text-danger" style="font-size: 0.5rem;"></i> Ошибка';
+          statusEl.className = 'badge bg-danger';
+        }
       }
     }
     
