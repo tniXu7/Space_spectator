@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     
     // Инициализация карты с улучшенными настройками
     const map = L.map('map', { 
-      attributionControl: true,
+      attributionControl: false, // УБИРАЕМ флаг атрибуции
       zoomControl: true,
       scrollWheelZoom: true,
       doubleClickZoom: true,
@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     
     // Используем Esri World Imagery - более стабильная карта
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: '&copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+      attribution: '', // Убираем атрибуцию
       noWrap: true,
       maxZoom: 19,
       minZoom: 2
@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     
     // Альтернативный слой - можно переключиться на стандартную карту
     const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors',
+      attribution: '', // Убираем атрибуцию
       noWrap: true,
       maxZoom: 19,
       minZoom: 2
@@ -285,15 +285,29 @@ document.addEventListener('DOMContentLoaded', async function () {
       popupAnchor: [0, -16]
     });
     
-    // Траектория с улучшенным стилем - делаем очень заметной
+    // Траектория с улучшенным стилем - делаем очень заметной и яркой
     const trail = L.polyline([], {
-      weight: 4,
-      color: '#ff6b6b',
-      opacity: 0.9,
+      weight: 6,
+      color: '#ff0000', // Ярко-красный цвет
+      opacity: 1.0, // Полная непрозрачность
       smoothFactor: 1,
       lineCap: 'round',
-      lineJoin: 'round'
+      lineJoin: 'round',
+      className: 'iss-trail-line' // Добавляем класс для дополнительного стиля
     }).addTo(map);
+    
+    // Добавляем CSS стиль для траектории чтобы она была еще заметнее
+    if (!document.getElementById('trail-style')) {
+      const style = document.createElement('style');
+      style.id = 'trail-style';
+      style.textContent = `
+        .iss-trail-line {
+          filter: drop-shadow(0 0 3px rgba(255, 0, 0, 0.8));
+          stroke-dasharray: none !important;
+        }
+      `;
+      document.head.appendChild(style);
+    }
     
     // Маркер МКС - используем стандартный маркер Leaflet для стабильности
     const marker = L.marker([lat0||0, lon0||0], { 
@@ -389,7 +403,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       } else {
         map.removeLayer(osmLayer);
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-          attribution: '&copy; Esri',
+          attribution: '', // Убираем атрибуцию
           noWrap: true,
           maxZoom: 19,
           minZoom: 2
@@ -490,12 +504,22 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     async function loadTrend() {
       try {
-        const r = await fetch('/api/iss/trend?limit=240');
+        // Запрашиваем больше точек для полной траектории за 24 часа
+        const r = await fetch('/api/iss/trend?limit=500');
         if (!r.ok) {
           throw new Error(`HTTP ${r.status}`);
         }
         const js = await r.json();
-        const pts = Array.isArray(js.points) ? js.points.map(p => [p.lat, p.lon]) : [];
+        const pts = Array.isArray(js.points) ? js.points.map(p => {
+          // Проверяем валидность координат
+          if (p.lat && p.lon && !isNaN(p.lat) && !isNaN(p.lon) && 
+              p.lat >= -90 && p.lat <= 90 && p.lon >= -180 && p.lon <= 180) {
+            return [Number(p.lat), Number(p.lon)];
+          }
+          return null;
+        }).filter(p => p !== null) : [];
+        
+        console.log('Загружено точек траектории:', pts.length);
         
         if (pts.length > 0) {
           // Обновляем траекторию - обязательно показываем
@@ -503,6 +527,9 @@ document.addEventListener('DOMContentLoaded', async function () {
           if (!map.hasLayer(trail)) {
             trail.addTo(map);
           }
+          
+          // Убеждаемся что траектория видна
+          trail.bringToFront();
           
           // НЕ меняем масштаб/позицию карты если пользователь уже взаимодействовал с ней
           // Только при первой загрузке подстраиваем карту
